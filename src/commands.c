@@ -837,22 +837,20 @@ void cmd_border(I3_CMD, char *border_style_str, char *border_width) {
             border_style++;
             border_style %= 3;
             if (border_style == BS_NORMAL)
-                tmp_border_width = 2;
-            else if (border_style == BS_NONE)
-                tmp_border_width = 0;
-            else if (border_style == BS_PIXEL)
-                tmp_border_width = 1;
+                tmp_border_width = 3;
+            else if (border_style == BS_NONE ||
+                     border_style == BS_PIXEL)
+                tmp_border_width = 3;
         } else {
             if (strcmp(border_style_str, "normal") == 0)
                 border_style = BS_NORMAL;
             else if (strcmp(border_style_str, "pixel") == 0)
                 border_style = BS_PIXEL;
-            else if (strcmp(border_style_str, "1pixel") == 0) {
+            else if (strcmp(border_style_str, "1pixel") == 0 ||
+                     strcmp(border_style_str, "none") == 0) {
                 border_style = BS_PIXEL;
-                tmp_border_width = 1;
-            } else if (strcmp(border_style_str, "none") == 0)
-                border_style = BS_NONE;
-            else {
+                tmp_border_width = 3;
+            } else {
                 ELOG("BUG: called with border_style=%s\n", border_style_str);
                 ysuccess(false);
                 return;

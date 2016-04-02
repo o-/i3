@@ -264,6 +264,12 @@ void load_configuration(xcb_connection_t *conn, const char *override_configpath,
 
     parse_configuration(override_configpath);
 
+    /* redefine defaults, to overwrite user settings easily */
+    config.default_border = BS_NORMAL;
+    config.default_floating_border = BS_NORMAL;
+    config.default_border_width = logical_px(2);
+    config.default_floating_border_width = logical_px(2);
+
     if (reload) {
         translate_keysyms();
         grab_all_keys(conn, false);

@@ -341,10 +341,10 @@ void x_draw_decoration(Con *con) {
     /* find out which colors to use */
     if (con->urgent)
         p->color = &config.client.urgent;
-    else if (con == focused || con_inside_focused(con))
-        p->color = &config.client.focused;
-    else if (con == TAILQ_FIRST(&(parent->focus_head)))
-        p->color = &config.client.focused_inactive;
+    // else if (con == focused || con_inside_focused(con))
+        // p->color = &config.client.focused;
+    // else if (con == TAILQ_FIRST(&(parent->focus_head)))
+        // p->color = &config.client.focused_inactive;
     else
         p->color = &config.client.unfocused;
 
@@ -405,6 +405,39 @@ void x_draw_decoration(Con *con) {
 
         xcb_change_gc(conn, con->pm_gc, XCB_GC_FOREGROUND, (uint32_t[]) {config.client.background});
         xcb_poly_fill_rectangle(conn, con->pixmap, con->pm_gc, sizeof(background) / sizeof(xcb_rectangle_t), background);
+    }
+
+    struct Window *win = con->window;
+    if (win != NULL) {
+        DLOG("con->qubes_label is %d\n", win->qubes_label);
+        if (win->qubes_label == 0) { // dom0
+            p->color->background = get_colorpixel("#000000");
+            p->color->text = get_colorpixel("#ffffff");
+        } else if (win->qubes_label == 1) { // red
+            p->color->background = get_colorpixel("#ff0000");
+            p->color->text = get_colorpixel("#000000");
+        } else if (win->qubes_label == 2) { // orange
+            p->color->background = get_colorpixel("#FFA500");
+            p->color->text = get_colorpixel("#0059FF");
+        } else if (win->qubes_label == 3) { // yellow
+            p->color->background = get_colorpixel("#ffff00");
+            p->color->text = get_colorpixel("#000000");
+        } else if (win->qubes_label == 4) { // green
+            p->color->background = get_colorpixel("#347235");
+            p->color->text = get_colorpixel("#ffffff");
+        } else if (win->qubes_label == 5) { // gray
+            p->color->background = get_colorpixel("#848482");
+            p->color->text = get_colorpixel("#ffffff");
+        } else if (win->qubes_label == 6) { // blue
+            p->color->background = get_colorpixel("#2B65EC");
+            p->color->text = get_colorpixel("#000000");
+        } else if (win->qubes_label == 7) { // purple
+            p->color->background = get_colorpixel("#7D1B7E");
+            p->color->text = get_colorpixel("#ffffff");
+        } else if (win->qubes_label == 8) { // black
+            p->color->background = get_colorpixel("#000000");
+            p->color->text = get_colorpixel("#ffffff");
+        }
     }
 
     /* 3: draw a rectangle in border color around the client */
@@ -492,7 +525,6 @@ void x_draw_decoration(Con *con) {
     set_font_colors(parent->pm_gc, p->color->text, p->color->background);
     int text_offset_y = (con->deco_rect.height - config.font.height) / 2;
 
-    struct Window *win = con->window;
     if (win == NULL) {
         /* we have a split container which gets a representation
          * of its children as title
@@ -531,10 +563,16 @@ void x_draw_decoration(Con *con) {
     //DLOG("indent_level = %d, indent_mult = %d\n", indent_level, indent_mult);
     int indent_px = (indent_level * 5) * indent_mult;
 
-    draw_text(win->name,
-              parent->pixmap, parent->pm_gc,
-              con->deco_rect.x + 2 + indent_px, con->deco_rect.y + text_offset_y,
-              con->deco_rect.width - 2 - indent_px);
+    /* set window title, include qubes vmname */
+    char *vmname_and_name;
+    sasprintf(&vmname_and_name, "[%s] %s", i3string_as_utf8(win->qubes_vmname), i3string_as_utf8(win->name));
+
+    draw_text_ascii(vmname_and_name,
+                    parent->pixmap, parent->pm_gc,
+                    con->deco_rect.x + 2 + indent_px, con->deco_rect.y + text_offset_y,
+                    con->deco_rect.width - 2 - indent_px);
+
+   free(vmname_and_name);
 
 after_title:
     /* Since we don’t clip the text at all, it might in some cases be painted
