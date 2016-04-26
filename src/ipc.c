@@ -336,6 +336,8 @@ void dump_node(yajl_gen gen, struct Con *con, bool inplace_restart) {
             ystr("title");
             ystr(i3string_as_utf8(con->window->name));
         }
+        ystr("qubes_vmname");
+        ystr(i3string_as_utf8(con->window->qubes_vmname));
 
         y(map_close);
     }
